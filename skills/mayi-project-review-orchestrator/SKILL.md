@@ -44,7 +44,18 @@ Do not use this skill when you only need analysis findings or only need file ren
    - `project_repo_path`
    - `focus_area` (if provided)
    - `future_project_type` (if provided)
-3. Verify summary output includes all required findings keys.
+3. Verify summary output includes all required findings keys:
+   - `project_overview`
+   - `how_it_works`
+   - `framework_and_stack`
+   - `key_design_decisions`
+   - `why_these_choices`
+   - `benefits`
+   - `tradeoffs_or_gaps`
+   - `reusable_patterns`
+   - `evidence_log`
+   - `unknowns_or_missing_evidence`
+4. Report progress to the user: "Analysis complete. Writing report..."
 4. Run `mayi-project-review-writer` with:
    - `project_name`
    - `review_findings` from step 2
@@ -56,6 +67,7 @@ Do not use this skill when you only need analysis findings or only need file ren
    - final file path
    - short generation summary
    - any warnings about unknown/missing evidence
+6. If the user requests PDF, convert using `../_shared/scripts/convert-md-to-pdf.sh`.
 
 ## Delegation Rules
 

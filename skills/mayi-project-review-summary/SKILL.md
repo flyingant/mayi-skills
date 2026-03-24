@@ -31,7 +31,7 @@ Do not use this skill for active incident debugging or release runbooks.
 
 ## Workflow
 
-1. Inspect project docs, structure, and major source directories.
+1. Inspect project using the repo inspection strategy below.
 2. Identify framework(s), libraries, runtime, data/storage, and deployment tools.
 3. Apply `focus_area` filtering:
    - `all`: include all major areas.
@@ -50,28 +50,45 @@ Do not use this skill for active incident debugging or release runbooks.
 10. If `future_project_type` is provided, add targeted recommendations.
 11. Return a structured findings object for `mayi-project-review-writer`.
 
+## Repo Inspection Strategy
+
+Inspect in this order. Stop going deeper once sufficient evidence is found for each findings key.
+
+1. **Root-level files first**: `README.md`, `package.json`, `Cargo.toml`, `go.mod`, `pom.xml`, `requirements.txt`, `pyproject.toml`, `docker-compose.yml`, `Dockerfile`, `.env.example`, `Makefile`, or equivalent.
+2. **Top-level directory listing**: identify major source directories (`src/`, `app/`, `lib/`, `api/`, `infra/`, `deploy/`, etc.).
+3. **Config and CI**: `.github/workflows/`, `terraform/`, `k8s/`, `serverless.yml`, `tsconfig.json`, `vite.config.*`, `next.config.*`, or equivalent.
+4. **Entry points**: main application entry files (e.g., `main.ts`, `index.ts`, `app.py`, `main.go`).
+5. **Key source modules**: sample 3-5 representative source files per major directory to understand patterns, architecture, and conventions.
+6. **Tests directory**: check presence, framework, and coverage approach.
+7. **Documentation**: `docs/`, `ADR/`, `CHANGELOG.md`, `ARCHITECTURE.md`, or equivalent.
+
+For monorepos, identify workspace/package boundaries first, then apply the above per package for the most active packages (top 3 by file count).
+
+Do not read every file. Prioritize breadth of understanding over exhaustive coverage.
+
 ## Output Contract (For Writer Skill)
 
-Produce findings content for these keys:
+Produce findings content for these keys. Each key maps to a string (markdown-formatted content ready to render as a section body).
 
-- `project_overview`
-- `how_it_works`
-- `framework_and_stack`
-- `key_design_decisions`
-- `why_these_choices`
-- `benefits`
-- `tradeoffs_or_gaps`
-- `reusable_patterns`
-- `evidence_log`
-- `unknowns_or_missing_evidence`
-- `recommendations_for_future_project_type` (optional)
+- `project_overview`: 2-4 sentence summary of what the project does and its primary users.
+- `how_it_works`: end-to-end flow description in plain language. Use numbered steps or a short paragraph. Include system boundaries.
+- `framework_and_stack`: bullet list of technologies grouped by layer (frontend, backend, data, infra, CI/CD).
+- `key_design_decisions`: bullet list of notable architectural or design choices, each as a short descriptive sentence.
+- `why_these_choices`: for each decision above, the rationale and context. Include constraints that drove the choice.
+- `benefits`: bullet list of things that worked well, backed by evidence.
+- `tradeoffs_or_gaps`: bullet list of limitations, missing pieces, or known debt.
+- `reusable_patterns`: concrete patterns other projects can adopt, each with a one-sentence description and the file/module it's demonstrated in.
+- `evidence_log`: structured list (see format below).
+- `unknowns_or_missing_evidence`: bullet list of areas where evidence was expected but not found.
+- `recommendations_for_future_project_type` (optional): only when `future_project_type` is provided.
 
-`evidence_log` rules:
+`evidence_log` entry format:
 
-- Include bullet items formatted as:
-  - `claim_type`: `fact` | `inference`
-  - `statement`: short claim
-  - `evidence`: file path(s) or config key(s)
+```
+- claim_type: fact | inference
+  statement: <short claim>
+  evidence: <file path(s) or config key(s)>
+```
 
 ## Quality Checks
 

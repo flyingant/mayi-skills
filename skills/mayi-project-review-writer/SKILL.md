@@ -47,18 +47,19 @@ Do not use this skill to discover framework/tech/design decisions from scratch.
 ## Workflow
 
 1. Validate required inputs and section completeness.
-2. Generate file slug from `project_name`:
-   - lowercase
-   - replace spaces/underscores with `-`
-   - remove characters except `a-z`, `0-9`, `-`
-   - collapse repeated `-`
-   - trim leading/trailing `-`
+2. Generate file slug from `project_name` using the shared slug rule in `skills/_shared/references/slug-rule.md`.
 3. Build file name: `project-reference-<slug>-<YYYY-MM-DD>.md`.
 4. Ensure `output_dir` exists.
 5. If target file exists and `overwrite=false`, stop and return a conflict note.
 6. Render markdown using the exact output structure.
-7. Write file to `output_dir`.
-8. Return written file path and short write summary.
+7. For `Evidence Log`, render each entry as a bullet list:
+   ```
+   - **[fact]** <statement> — _evidence: <file path(s) or config key(s)>_
+   ```
+8. If any required section has no content from findings, write: `No evidence found. Review source data.` — do not leave the section empty.
+9. Write file to `output_dir`.
+10. Return written file path and short write summary.
+11. If the user requests PDF output, convert using `skills/_shared/scripts/convert-md-to-pdf.sh`.
 
 ## Output File Rule
 

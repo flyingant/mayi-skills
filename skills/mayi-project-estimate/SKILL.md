@@ -19,11 +19,17 @@ Do not use this skill as a commitment contract; it is an estimation aid.
 
 ## Required Inputs
 
-- One source input:
+- One source input (exactly one of the following):
   - `source_text` (few sentences), or
   - `source_file_path` (`.docx` or `.pptx`)
 - `project_name`
 - `estimation_granularity`: `page` | `feature` | `function`
+
+## Input Validation
+
+- Exactly one of `source_text` or `source_file_path` must be provided. If both or neither are given, stop and request clarification.
+- If `source_file_path` is provided, verify the file exists and has a supported extension (`.docx` or `.pptx`) before proceeding.
+- `estimation_granularity` must be one of the three allowed values.
 
 ## Optional Inputs
 
@@ -40,23 +46,45 @@ Do not use this skill as a commitment contract; it is an estimation aid.
 
 Before starting estimation, ask the user to provide or confirm these items:
 
-1. `team_profile` (`advanced-developer` | `senior-developer` | `mixed-team`)
-2. Definition of done scope:
+1. `estimation_granularity` (`page` | `feature` | `function`)
+2. `team_profile` (`advanced-developer` | `senior-developer` | `mixed-team`)
+   - `advanced-developer`: experienced engineer comfortable with full-stack and DevOps; fastest pace
+   - `senior-developer`: solid engineer, may need minor ramp-up on unfamiliar areas; moderate pace
+   - `mixed-team`: team with varied experience; slowest pace, more coordination overhead
+3. Definition of done scope (select all that apply; affects which task categories appear in the breakdown):
    - code
    - tests
    - documentation
    - deployment baseline
-3. `confidence_target` (`rough` by default)
-4. `communication_buffer_percent` (10% default, user can override)
-5. Any `devops_extra_requirements` for deployment (if none, state `none`)
-6. Any reusable existing modules/components (if unknown, state `unknown`)
+4. `confidence_target` (`rough` by default)
+5. `communication_buffer_percent` (10% default, user can override)
+6. Any `devops_extra_requirements` for deployment (if none, state `none`)
+7. Any reusable existing modules/components (if unknown, state `unknown`)
 
 If any item is missing, pause and request it explicitly before estimating.
 
+## Source File Parsing
+
+When `source_file_path` is provided:
+
+- `.pptx`: extract text from each slide in order. Treat each slide as a potential scope section. Preserve slide titles as section headers.
+- `.docx`: extract full text content preserving heading structure.
+- Use available workspace tools or libraries (`python-pptx`, `python-docx`, pandoc, or equivalent) to extract text. If no extraction tool is available, stop and inform the user.
+- After extraction, treat the text as the requirement source for all downstream steps.
+
+## Scripts
+
+- `scripts/validate-inputs.sh`
+  - Validates required inputs, mutual exclusion of source inputs, enum values, and file existence.
+  - Normalizes paths to absolute paths.
+  - Fails fast with clear errors when inputs are invalid.
+- `../_shared/scripts/convert-md-to-pdf.sh`
+  - Converts the output markdown to PDF (optional, on user request).
+
 ## Workflow
 
-1. Run the mandatory pre-run intake and collect missing preparation inputs.
-2. Parse requirements from input source and extract explicit scope.
+1. Validate inputs via `scripts/validate-inputs.sh` and run the mandatory pre-run intake to collect missing preparation inputs.
+2. Parse requirements from input source (see Source File Parsing) and extract explicit scope.
 3. Build a draft scope inventory before any estimation:
    - page list (or feature list when page boundaries are unclear)
    - per-page/per-feature core functions
@@ -90,18 +118,13 @@ If any item is missing, pause and request it explicitly before estimating.
    - expected workdays
    - conservative workdays
 15. Write markdown output file with deterministic naming.
+16. If the user requests PDF output, convert using `skills/_shared/scripts/convert-md-to-pdf.sh`.
 
 ## Output File Rule
 
 `project-estimate-<project-name>-<YYYY-MM-DD>.md`
 
-Slug rule for `<project-name>`:
-
-- lowercase
-- replace spaces/underscores with `-`
-- remove characters except `a-z`, `0-9`, `-`
-- collapse repeated `-`
-- trim leading/trailing `-`
+Generate `<project-name>` slug using the shared slug rule in `skills/_shared/references/slug-rule.md`.
 
 ## Output Structure
 
@@ -150,11 +173,30 @@ Use this section order exactly:
   - potential function list
   - rough workday estimate
 
+## Definition of Done Mapping
+
+The user's selected definition-of-done scope controls which task categories appear:
+
+- `code`: include page/feature/function implementation tasks and API integration
+- `tests`: include a `Testing` row in the implementation breakdown (unit, integration, e2e as appropriate)
+- `documentation`: include a `Documentation` row (README, API docs, inline docs)
+- `deployment baseline`: include deployment/devops tasks
+
+Omit categories the user excluded. If the user chose only `code`, do not add testing or deployment rows.
+
+## Error Handling
+
+- Source file not found or unreadable: stop and report the exact path.
+- Source file has unsupported extension: stop and list supported formats.
+- Extraction produces no text content: stop and ask user to verify the file.
+- Scope confirmation rejected more than twice: pause and ask if the user wants to provide a revised requirements source.
+
 ## Quality Checks
 
 - All scope items trace back to source content or assumptions.
 - Scope confirmation is completed before estimation starts.
 - Implementation breakdown matches selected `estimation_granularity`.
+- Implementation breakdown includes only the task categories matching the user's definition of done.
 - Requirement summary includes function-level requirement bullets.
 - Page-level navigation/redirection relationships are identified where present.
 - Setup/API/cross-cutting/deployment are included within `Implementation Breakdown`.

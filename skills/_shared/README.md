@@ -1,6 +1,12 @@
 # Shared Skill Utilities
 
-Reusable scripts that can be used by multiple skills.
+Reusable scripts and references shared across skills.
+
+## References
+
+- `references/slug-rule.md`
+  - Shared algorithm for generating file-name-safe slugs from project names
+  - Used by `mayi-project-estimate` and `mayi-project-review-writer`
 
 ## Scripts
 

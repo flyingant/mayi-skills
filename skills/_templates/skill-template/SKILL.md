@@ -9,12 +9,6 @@ description: Use when [specific triggering conditions and symptoms]
 
 Briefly explain the skill and the core result it produces.
 
-## Capture Intent
-
-- Primary goal this skill enables
-- Typical user request patterns
-- Success criteria for the final output
-
 ## When to Use
 
 - Trigger 1
@@ -31,21 +25,19 @@ When NOT to use:
 - `input_a`
 - `input_b`
 
+## Input Validation
+
+- Describe mutual exclusions or format constraints on required inputs.
+- State what to do when validation fails (stop and request clarification).
+
 ## Optional Inputs
 
 - `input_c`: default value and meaning
 
-## Interview and Research
-
-1. Clarify missing context from inputs.
-2. Inspect relevant files/docs/code.
-3. Identify edge cases and constraints.
-4. Confirm expected output and acceptance criteria.
-
 ## Workflow
 
-1. Validate inputs.
-2. Gather context.
+1. Validate inputs (see Input Validation).
+2. Gather context from inputs and relevant files/docs/code.
 3. Execute core steps.
 4. Produce output.
 5. Run quality checks before finalizing.
@@ -54,7 +46,9 @@ When NOT to use:
 
 `<output-name>-<YYYY-MM-DD>.md`
 
-## Report Structure
+Generate slug using the shared rule in `skills/_shared/references/slug-rule.md`.
+
+## Output Structure
 
 ALWAYS use this exact section order:
 
@@ -62,13 +56,17 @@ ALWAYS use this exact section order:
 2. Section two
 3. Section three
 
+## Error Handling
+
+- Describe common failure modes and expected behavior for each.
+
 ## Quality Checks
 
 - Validate completeness
 - Distinguish fact vs inference
 - Ensure format compliance
 
-## Example 1
+## Minimal Invocation Example
 
 Input:
 
