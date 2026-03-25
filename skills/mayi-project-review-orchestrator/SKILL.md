@@ -38,7 +38,7 @@ Do not use this skill when you only need analysis findings or only need file ren
 ## Workflow
 
 1. Validate all required inputs via:
-   - `scripts/validate-inputs.sh --project-name ... --project-repo-path ... --output-dir ... [--output-date ...] [--overwrite ...]`
+   - `scripts/validate-inputs.sh --project-name ... --project-repo-path ... --output-dir ... [--focus-area ...] [--future-project-type ...] [--output-date ...] [--overwrite ...]`
 2. Run `mayi-project-review-summary` with:
    - `project_name`
    - `project_repo_path`
@@ -48,6 +48,9 @@ Do not use this skill when you only need analysis findings or only need file ren
    - `project_overview`
    - `how_it_works`
    - `framework_and_stack`
+   - `major_features`
+   - `basic_user_flow`
+   - `special_logic`
    - `key_design_decisions`
    - `why_these_choices`
    - `benefits`
@@ -55,19 +58,19 @@ Do not use this skill when you only need analysis findings or only need file ren
    - `reusable_patterns`
    - `evidence_log`
    - `unknowns_or_missing_evidence`
-4. Report progress to the user: "Analysis complete. Writing report..."
-4. Run `mayi-project-review-writer` with:
+4. Report progress to the user: "Analysis complete (features, user flow, and special logic extracted). Writing report..."
+5. Run `mayi-project-review-writer` with:
    - `project_name`
    - `review_findings` from step 2
    - `output_dir`
    - `output_date` (if provided)
    - `future_project_type` (if provided)
    - `overwrite` (if provided)
-5. Return:
+6. Return:
    - final file path
    - short generation summary
    - any warnings about unknown/missing evidence
-6. If the user requests PDF, convert using `../_shared/scripts/convert-md-to-pdf.sh`.
+7. If the user requests PDF, convert using `../_shared/scripts/convert-md-to-pdf.sh`.
 
 ## Delegation Rules
 
@@ -78,8 +81,9 @@ Do not use this skill when you only need analysis findings or only need file ren
 ## Scripts
 
 - `scripts/validate-inputs.sh`
-  - Validates required inputs and common option formats.
+  - Validates required inputs and common option formats (`focus_area`, `overwrite`, optional `future_project_type`, `output_date`).
   - Normalizes repo and output paths to absolute paths.
+  - Prints normalized `key=value` lines for downstream steps (including `focus_area`, always; `future_project_type` only when set).
   - Fails fast with clear errors when inputs are invalid.
 - `../_shared/scripts/convert-md-to-pdf.sh`
   - Converts one markdown file or a directory of markdown files to PDF.

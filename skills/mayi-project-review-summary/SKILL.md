@@ -37,18 +37,21 @@ Do not use this skill for active incident debugging or release runbooks.
    - `all`: include all major areas.
    - specific area: prioritize that area and keep other areas short.
 4. Explain end-to-end project flow in plain language.
-5. Extract specific design choices (if present) and classify them by area.
-6. For each choice, document rationale and tradeoffs with explicit claim typing:
+5. List major features/modules and their user-facing purpose.
+6. Describe basic user flow (entry -> key actions -> outcomes) across major paths.
+7. Identify special logic (permissions, state machine rules, thresholds, exception branches, business constraints).
+8. Extract specific design choices (if present) and classify them by area.
+9. For each choice, document rationale and tradeoffs with explicit claim typing:
    - `fact`: directly supported by repository evidence.
    - `inference`: reasoned conclusion based on evidence.
-7. Record practical outcomes:
+10. Record practical outcomes:
    - What works well
    - Any specific design strengths
    - Known limitations or gaps
-8. If evidence is missing, do not invent details. Mark as `unknown` and list where evidence was expected.
-9. Derive reusable patterns for future projects.
-10. If `future_project_type` is provided, add targeted recommendations.
-11. Return a structured findings object for `mayi-project-review-writer`.
+11. If evidence is missing, do not invent details. Mark as `unknown` and list where evidence was expected.
+12. Derive reusable patterns for future projects.
+13. If `future_project_type` is provided, add targeted recommendations.
+14. Return a structured findings object for `mayi-project-review-writer`.
 
 ## Repo Inspection Strategy
 
@@ -73,6 +76,9 @@ Produce findings content for these keys. Each key maps to a string (markdown-for
 - `project_overview`: 2-4 sentence summary of what the project does and its primary users.
 - `how_it_works`: end-to-end flow description in plain language. Use numbered steps or a short paragraph. Include system boundaries.
 - `framework_and_stack`: bullet list of technologies grouped by layer (frontend, backend, data, infra, CI/CD).
+- `major_features`: bullet list of major user-facing features/modules and what each one does.
+- `basic_user_flow`: numbered flow of core user journey and key alternative paths.
+- `special_logic`: bullet list of special business logic/rules (permission gates, thresholds, state transitions, exceptional branches).
 - `key_design_decisions`: bullet list of notable architectural or design choices, each as a short descriptive sentence.
 - `why_these_choices`: for each decision above, the rationale and context. Include constraints that drove the choice.
 - `benefits`: bullet list of things that worked well, backed by evidence.
@@ -97,6 +103,8 @@ Produce findings content for these keys. Each key maps to a string (markdown-for
 - Keep recommendations practical and implementation-ready
 - Avoid vague claims such as "better performance" without concrete context
 - Confirm every non-trivial claim appears in `evidence_log`
+- **`evidence_log` paths**: use correct repo-relative POSIX paths (e.g. `src/app/auth.ts`). Do not use placeholder or mistyped paths (e.g. `src.app/...`).
+- For `major_features`, cross-check `src/app/**/page.tsx` (or framework equivalent) so the catalog matches routable UI, not only README marketing text.
 - Confirm output is ready to hand off to `mayi-project-review-writer`
 
 ## Minimal Invocation Example

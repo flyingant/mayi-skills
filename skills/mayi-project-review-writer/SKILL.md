@@ -36,6 +36,9 @@ Do not use this skill to discover framework/tech/design decisions from scratch.
 - `project_overview`
 - `how_it_works`
 - `framework_and_stack`
+- `major_features`
+- `basic_user_flow`
+- `special_logic`
 - `key_design_decisions`
 - `why_these_choices`
 - `benefits`
@@ -52,22 +55,22 @@ Do not use this skill to discover framework/tech/design decisions from scratch.
 4. Ensure `output_dir` exists.
 5. If target file exists and `overwrite=false`, stop and return a conflict note.
 6. Render markdown using the exact output structure.
-7. For `Evidence Log`, render each entry as a bullet list:
-   ```
-   - **[fact]** <statement> — _evidence: <file path(s) or config key(s)>_
-   ```
+7. For `Evidence Log`, render each entry as a bullet using the entry’s `claim_type`:
+   - `fact`: `- **[fact]** <statement> — _evidence: <file path(s) or config key(s)>_`
+   - `inference`: `- **[inference]** <statement> — _evidence: <file path(s) or config key(s)>_`
 8. If any required section has no content from findings, write: `No evidence found. Review source data.` — do not leave the section empty.
 9. Write file to `output_dir`.
 10. Return written file path and short write summary.
-11. If the user requests PDF output, convert using `skills/_shared/scripts/convert-md-to-pdf.sh`.
+11. If the user requests PDF output, convert using `../_shared/scripts/convert-md-to-pdf.sh`.
 
 ## Output File Rule
 
-`project-reference-<project-name>-<YYYY-MM-DD>.md`
+`project-reference-<slug>-<YYYY-MM-DD>.md` where `<slug>` is derived from `project_name` using `../_shared/references/slug-rule.md` (not the raw `project_name` string).
 
 Example:
 
-`project-reference-order-service-2026-03-24.md`
+- `Order Service` → `project-reference-order-service-2026-03-24.md`
+- `app.flyingant.me` → `project-reference-appflyingantme-2026-03-24.md`
 
 ## Output Structure
 
@@ -77,14 +80,17 @@ Use this section order exactly:
 2. `## Project Overview`
 3. `## How It Works`
 4. `## Framework & Tech Stack`
-5. `## Key Design Decisions`
-6. `## Why These Choices`
-7. `## Benefits`
-8. `## Tradeoffs / Gaps`
-9. `## Reusable Patterns for Future Projects`
-10. `## Recommendations for <future_project_type>` (only if provided)
-11. `## Evidence Log`
-12. `## Unknowns / Missing Evidence`
+5. `## Major Features`
+6. `## Basic User Flow`
+7. `## Special Logic`
+8. `## Key Design Decisions`
+9. `## Why These Choices`
+10. `## Benefits`
+11. `## Tradeoffs / Gaps`
+12. `## Reusable Patterns for Future Projects`
+13. `## Recommendations for <future_project_type>` (only if provided)
+14. `## Evidence Log`
+15. `## Unknowns / Missing Evidence`
 
 ## Quality Checks
 
