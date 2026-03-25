@@ -81,44 +81,101 @@ When `source_file_path` is provided:
 - `../_shared/scripts/convert-md-to-pdf.sh`
   - Converts the output markdown to PDF (optional, on user request).
 
+## Requirement Discovery & Analysis
+
+Before building any scope inventory, perform a deep-dive analysis on the parsed source content to surface the real implementable requirements. Raw inputs (especially slide decks, brief texts, or business-oriented docs) often hide, omit, or vaguely describe what actually needs to be built.
+
+### Discovery Steps
+
+1. **Extract explicit statements** — list every requirement or feature the source directly mentions.
+2. **Identify implicit requirements** — for each explicit statement, ask:
+   - What data does this feature need? (storage, APIs, models)
+   - What user interactions does this imply? (forms, validations, confirmations, error states)
+   - What permissions or roles are involved?
+   - What happens on failure or edge cases?
+3. **Detect vague or ambiguous language** — flag phrases like "easy to use", "fast", "modern design", "seamless integration", "etc." and translate them into concrete, implementable items or mark them as needing clarification.
+4. **Derive technical requirements** — infer technical needs from business descriptions:
+   - Authentication/authorization if users or roles are mentioned
+   - File upload/processing if documents or media are referenced
+   - Notifications if workflows or approvals are described
+   - Search/filtering if lists or catalogs are involved
+   - Real-time updates if collaboration or live data is mentioned
+5. **Spot missing requirements** — check for commonly omitted areas:
+   - Error handling and validation UX
+   - Loading/empty/error states for every data-driven screen
+   - Responsive/mobile considerations
+   - Pagination, sorting, filtering for any list view
+   - Session management, logout, token refresh
+   - Audit trail or logging if compliance is relevant
+6. **Map dependencies** — identify which discovered requirements depend on each other and which can be built independently.
+7. **Classify each requirement**:
+   - `explicit` — directly stated in source
+   - `implicit` — logically necessary but not stated
+   - `ambiguous` — stated but unclear; needs user clarification
+   - `missing` — commonly expected but absent from source
+
+### Discovery Output
+
+Present a **Requirement Discovery Report** to the user containing:
+
+- **Confirmed explicit requirements** (extracted verbatim or paraphrased from source)
+- **Discovered implicit requirements** (with rationale for why each is needed)
+- **Ambiguous items requiring clarification** (with specific questions for the user)
+- **Potentially missing requirements** (with recommendation to include or exclude)
+- **Dependency map** (which items block or enable others)
+
+Wait for user confirmation or clarification on the discovery report before proceeding to scope inventory. If the user dismisses a discovered requirement, remove it from scope. If the user confirms an implicit or missing requirement, promote it to confirmed scope.
+
 ## Workflow
 
 1. Validate inputs via `scripts/validate-inputs.sh` and run the mandatory pre-run intake to collect missing preparation inputs.
-2. Parse requirements from input source (see Source File Parsing) and extract explicit scope.
-3. Build a draft scope inventory before any estimation:
+2. Parse requirements from input source (see Source File Parsing) and extract raw content.
+3. Run **Requirement Discovery & Analysis** on the parsed content to surface explicit, implicit, ambiguous, and missing requirements.
+4. Present the Requirement Discovery Report to the user and collect clarifications.
+5. Finalize the confirmed requirement list based on user feedback.
+6. Build a draft scope inventory before any estimation:
    - page list (or feature list when page boundaries are unclear)
    - per-page/per-feature core functions
    - cross-page/feature navigation and dependencies
-4. Present `Scope Confirmation` to the user and request confirmation/update.
-5. If scope is not confirmed, revise scope inventory and repeat confirmation.
-6. After scope confirmation, inspect each page/screen carefully and extract function-level potential requirements (not only UI rendering).
-7. Identify cross-page connections:
+7. Present `Scope Confirmation` to the user and request confirmation/update.
+8. If scope is not confirmed, revise scope inventory and repeat confirmation.
+9. After scope confirmation, inspect each page/screen carefully and extract function-level potential requirements (not only UI rendering).
+10. Identify cross-page connections:
    - page redirections
    - navigation routes
    - state handoff between pages
-8. List assumptions for missing details (never hide assumptions).
-9. Build implementation breakdown by selected granularity:
-   - `page`: page/screen-level tasks
-   - `feature`: module/feature-level tasks
-   - `function`: endpoint/function-level tasks
-10. Use one unified implementation breakdown section and include:
-   - page/function implementation
-   - API integration
-   - framework/project setup
-   - cross-cutting tasks
-   - deployment/devops tasks
-11. Estimate in rough workdays (not hours).
-12. Apply risk buffer:
-   - `rough`: 30%
-   - `normal`: 20%
-   - `high`: 10%
-13. Apply communication buffer using `communication_buffer_percent` (default 10%).
-14. Return total estimate range:
-   - optimistic workdays
-   - expected workdays
-   - conservative workdays
-15. Write markdown output file with deterministic naming.
-16. If the user requests PDF output, convert using `skills/_shared/scripts/convert-md-to-pdf.sh`.
+11. List assumptions for missing details (never hide assumptions).
+12. Build implementation breakdown by selected granularity:
+    - `page`: page/screen-level tasks
+    - `feature`: module/feature-level tasks
+    - `function`: endpoint/function-level tasks
+12a. **Scope coverage verification** — before finalising the breakdown, cross-check every item in `## Scope Confirmation` against the draft task list:
+    - Every confirmed scope item must be covered by at least one breakdown task.
+    - For `page` granularity, logically group pages that share a template or content type (e.g., same section of the site), but list the covered page names explicitly in the task description so coverage is visible.
+    - If a confirmed page is not yet represented in any task row, add a dedicated row for it rather than leaving it uncovered.
+    - Confirmed pages marked as external links must still appear — capture them as routing/redirect configuration tasks, not as full-build tasks.
+13. Use one unified implementation breakdown section and include:
+    - page/function implementation
+    - API integration
+    - framework/project setup
+    - cross-cutting tasks
+    - deployment/devops tasks
+14. Estimate in rough workdays (not hours).
+15. Apply risk buffer:
+    - `rough`: 30%
+    - `normal`: 20%
+    - `high`: 10%
+16. Apply communication buffer using `communication_buffer_percent` (default 10%).
+17. Return total estimate range:
+    - optimistic workdays
+    - expected workdays
+    - conservative workdays
+18. Write markdown output file with deterministic naming.
+19. If the user requests PDF output, convert using `skills/_shared/scripts/convert-md-to-pdf.sh`.
+
+## Output Language Rule
+
+All output — including the Requirement Discovery Report, Requirement Summary, Scope Confirmation, Assumptions, Implementation Breakdown, Disclaimer, and every other section — must be written in the same language as the original source input. Detect the language of the source text (or extracted document content) and use that language consistently throughout the entire output. Do not translate or switch to English unless the source input is in English.
 
 ## Output File Rule
 
@@ -131,19 +188,28 @@ Generate `<project-name>` slug using the shared slug rule in `skills/_shared/ref
 Use this section order exactly:
 
 1. `# Project Estimate: <project_name>`
-2. `## Requirement Summary`
-3. `## Scope Confirmation`
-4. `## Assumptions`
-5. `## Estimation Granularity`
-6. `## Implementation Breakdown`
-7. `## Risk Buffer and Communication Buffer`
-8. `## Total Estimate (Optimistic / Expected / Conservative Workdays)`
-9. `## Disclaimer`
-10. `## Dependencies Required`
+2. `## Requirement Discovery Report`
+3. `## Requirement Summary`
+4. `## Scope Confirmation`
+5. `## Assumptions`
+6. `## Estimation Granularity`
+7. `## Implementation Breakdown`
+8. `## Risk Buffer and Communication Buffer`
+9. `## Total Estimate (Optimistic / Expected / Conservative Workdays)`
+10. `## Disclaimer`
+11. `## Dependencies Required`
+
+`## Requirement Discovery Report` requirements:
+
+- Group discovered requirements by classification: `explicit`, `implicit`, `ambiguous`, `missing`.
+- For each implicit requirement, include a one-line rationale.
+- For each ambiguous item, include the specific clarification question asked and the user's answer.
+- For each missing requirement, note whether the user confirmed inclusion or exclusion.
+- Include the dependency map as a simple list showing which items depend on others.
 
 `## Requirement Summary` requirements:
 
-- Include a bullet list of potential function-level requirements discovered per page.
+- Include a bullet list of all confirmed requirements (explicit + user-confirmed implicit/missing) per page.
 - Include cross-page routing/navigation dependencies where visible.
 
 `## Scope Confirmation` requirements:
@@ -193,11 +259,15 @@ Omit categories the user excluded. If the user chose only `code`, do not add tes
 
 ## Quality Checks
 
-- All scope items trace back to source content or assumptions.
+- Requirement Discovery & Analysis is completed and confirmed by the user before scope inventory.
+- All scope items trace back to source content, discovery findings, or assumptions.
 - Scope confirmation is completed before estimation starts.
 - Implementation breakdown matches selected `estimation_granularity`.
+- Every confirmed scope item from `## Scope Confirmation` is traceable to at least one implementation breakdown task; no confirmed page or feature is silently omitted.
+- For `page` granularity with grouped tasks, covered page names are visible in the task description or a dedicated note (e.g., parenthetical list of page slugs or names).
 - Implementation breakdown includes only the task categories matching the user's definition of done.
 - Requirement summary includes function-level requirement bullets.
+- Every implicit or missing requirement in the final estimate has user confirmation.
 - Page-level navigation/redirection relationships are identified where present.
 - Setup/API/cross-cutting/deployment are included within `Implementation Breakdown`.
 - Buffer percentage matches selected confidence target.
